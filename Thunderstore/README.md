@@ -1,6 +1,6 @@
 # BetterGameplay
 
-A simple mod that adds various QOL improvements.  
+A simple mod that adds various QoL improvements.  
 
 #### THIS MOD IS IN EARLY DEVELOPMENT AND MAY HAVE BUGS
 
@@ -23,11 +23,14 @@ If you need help or have suggestions, create an issue on github, join my discord
 
 [My Discord](https://discord.gg/Zy2HSB4) XoXFaby#1337
 
-https://github.com/xoxfaby/BetterUI
+https://github.com/xoxfaby/BetterGameplay
 
 If you have suggestions for more QoL improvements, feel free to contact me!
 
 ## Changelog
+
+#### v1.0.1 
+ - Updating the readme
 
 ### v1.0.0 
  - Initial Release
