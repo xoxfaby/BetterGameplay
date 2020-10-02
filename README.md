@@ -6,6 +6,7 @@ A simple mod that adds various QoL improvements.
 
 I highly recommend that when using this mod ( or any mod ) you understand that bugs can happen.
 
+
 ## Currently implemented:
 - Items that fall off the map are teleported up
 - Your equipment is paused in the Baazar if you have a Gesture of the Drowned
@@ -28,8 +29,7 @@ If you have suggestions for more QoL improvements, feel free to contact me!
 
 ## Changelog
 
-
-### v1.0.1 
+#### v1.0.1 
  - Updating the readme
 
 ### v1.0.0 
