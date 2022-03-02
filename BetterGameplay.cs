@@ -2,77 +2,67 @@
 
 using BepInEx;
 using RoR2;
-using R2API.Utils;
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
 
 namespace BetterGameplay
 {
-    [BepInDependency("com.bepis.r2api")]
-    [BepInPlugin("com.xoxfaby.BetterGameplay", "BetterGameplay", "1.0.0")]
-    [NetworkCompatibility(CompatibilityLevel.EveryoneMustHaveMod, VersionStrictness.EveryoneNeedSameModVersion)]
-    public class BetterGameplay : BaseUnityPlugin
+    [BepInPlugin("com.xoxfaby.BetterGameplay", "BetterGameplay", "1.1.2")]
+    public class BetterGameplayPlugin : BetterUnityPlugin.BetterUnityPlugin<BetterGameplayPlugin>
     {
-        char[] collisionMap = "11111111100010000000110011001000".ToCharArray();
-                                         
-        public void Awake()
+        public override BaseUnityPlugin typeReference => throw new NotImplementedException();
+
+        static void MapZone_Awake(Action<MapZone> orig, MapZone self)
         {
-            for(int i = 0; i < 32; i++)
+            orig(self);
+            if (self.zoneType == MapZone.ZoneType.OutOfBounds) self.gameObject.layer = 29;
+        }
+
+        static void MapZone_TryZoneStart(Action<MapZone, Collider> orig, MapZone self, Collider collider)
+        {
+            if (self.zoneType == MapZone.ZoneType.OutOfBounds)
             {
-                Physics.IgnoreLayerCollision(22, i, collisionMap[31 - i] == '0' ? true : false) ;
+                if (collider.GetComponent<PickupDropletController>() || collider.GetComponent<GenericPickupController>())
+                {
+                    SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
+                    spawnCard.hullSize = HullClassification.Human;
+                    spawnCard.nodeGraphType = RoR2.Navigation.MapNodeGroup.GraphType.Ground;
+                    spawnCard.prefab = Resources.Load<GameObject>("SpawnCards/HelperPrefab");
+                    GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
+                    {
+                        placementMode = DirectorPlacementRule.PlacementMode.NearestNode,
+                        position = collider.transform.position
+                    }, RoR2Application.rng));
+                    if (gameObject)
+                    {
+                        TeleportHelper.TeleportGameObject(collider.gameObject, gameObject.transform.position);
+                        UnityEngine.Object.Destroy(gameObject);
+                    }
+                    UnityEngine.Object.Destroy(spawnCard);
+                }
             }
-            On.RoR2.PickupDropletController.Start += (orig, self) =>
+
+            orig(self, collider);
+        }
+        static bool EquipmentSlot_ExecuteIfReady(Func<EquipmentSlot,bool> orig, EquipmentSlot self)
+        {
+            if ((self.inventory != null) && self.inventory.GetItemCount(ItemCatalog.FindItemIndex("AutoCastEquipment")) > 0)
             {
-                orig(self);
-                self.gameObject.layer = 22;
-            };
-            On.RoR2.MapZone.TryZoneStart += (orig, self, collider) => {
-                if (self.zoneType == MapZone.ZoneType.OutOfBounds)
+                if (SceneInfo.instance.sceneDef.nameToken == "MAP_BAZAAR_TITLE")
                 {
-                    if (collider.GetComponent<PickupDropletController>() || collider.GetComponent<GenericPickupController>())
-                    {
-                        SpawnCard spawnCard = ScriptableObject.CreateInstance<SpawnCard>();
-                        spawnCard.hullSize = HullClassification.Human;
-                        spawnCard.nodeGraphType = RoR2.Navigation.MapNodeGroup.GraphType.Ground;
-                        spawnCard.prefab = Resources.Load<GameObject>("SpawnCards/HelperPrefab");
-                        GameObject gameObject = DirectorCore.instance.TrySpawnObject(new DirectorSpawnRequest(spawnCard, new DirectorPlacementRule
-                        {
-                            placementMode = DirectorPlacementRule.PlacementMode.NearestNode,
-                            position = collider.transform.position
-                        }, RoR2Application.rng));
-                        if (gameObject)
-                        {
-                            Debug.Log("TP Item Back");
-                            TeleportHelper.TeleportGameObject(collider.gameObject, gameObject.transform.position);
-                            UnityEngine.Object.Destroy(gameObject);
-                        }
-                        UnityEngine.Object.Destroy(spawnCard);
-                    }
+                    return false;
                 }
-
-                orig(self, collider);
-            };
-
-            On.RoR2.EquipmentSlot.ExecuteIfReady += (orig, self) =>
-            {
-                if((self.inventory != null) ? self.inventory.GetItemCount(ItemIndex.AutoCastEquipment) > 0 : false)
-                {
-                    if(SceneInfo.instance.sceneDef.nameToken == "MAP_BAZAAR_TITLE")
-                    {
-                        return false;
-                    }
-                }
-                return orig(self);
-            };
-
-            On.RoR2.Inventory.UpdateEquipment += (orig, self) =>
+            }
+            return orig(self);
+        }
+        static void Inventory_UpdateEquipment(Action<Inventory> orig, Inventory self)
             {
 
-                if (self.GetItemCount(ItemIndex.AutoCastEquipment) > 0)
+                if (self.GetItemCount(ItemCatalog.FindItemIndex("AutoCastEquipment")) > 0)
                 {
                     if (SceneInfo.instance.sceneDef.nameToken == "MAP_BAZAAR_TITLE")
                     {
-                        for(int i = 0; i < self.equipmentStateSlots.Length; i++)
+                        for(int i = 0; i<self.equipmentStateSlots.Length; i++)
                         {
                             self.equipmentStateSlots[0].chargeFinishTime.t += Time.deltaTime;
                         }
@@ -80,7 +70,20 @@ namespace BetterGameplay
                     }
                 }
                 orig(self);
-            };
+            }
+        protected override void Awake()
+        {
+            base.Awake();
+            for(int i = 0; i < 32; i++)
+            {
+                Physics.IgnoreLayerCollision(29, i, Physics.GetIgnoreLayerCollision(15, i)) ;
+            }
+            Physics.IgnoreLayerCollision(29, 8, false);
+            Physics.IgnoreLayerCollision(29, 13, false);
+            BetterGameplayPlugin.Hooks.Add<RoR2.MapZone>("Awake", MapZone_Awake);
+            BetterGameplayPlugin.Hooks.Add<RoR2.MapZone, Collider>("TryZoneStart", MapZone_TryZoneStart);
+            BetterGameplayPlugin.Hooks.Add<RoR2.EquipmentSlot, bool>( "ExecuteIfReady", EquipmentSlot_ExecuteIfReady);
+            BetterGameplayPlugin.Hooks.Add<RoR2.Inventory>( "UpdateEquipment", Inventory_UpdateEquipment);
         }
     }
 }

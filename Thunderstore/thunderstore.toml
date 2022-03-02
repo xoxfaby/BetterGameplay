@@ -1,0 +1,31 @@
+[config]
+schemaVersion = "0.0.1"
+
+[package]
+namespace = "XoXFaby"
+name = "BetterGameplay"
+versionNumber = "2.0.0"
+description = "A collection of QoL improvements intended not to change the balance of the game."
+websiteUrl = "https://github.com/xoxfaby/BetterGameplay"
+containsNsfwContent = false
+
+[package.dependencies]
+bbepis-BepInExPack = "5.4.9"
+
+[build]
+icon = "./icon.png"
+readme = "../README.md"
+outdir = "../zip"
+
+[[build.copy]]
+source = "../bin/Release/netstandard2.0/BetterGameplay.dll"
+target = "BetterGameplay.dll"
+
+[[build.copy]]
+source = "../bin/Release/netstandard2.0/publish/BetterUnityPlugin.dll"
+target = "BetterUnityPlugin.dll"
+
+[publish]
+repository = "https://thunderstore.io"
+communities = ["riskofrain2"]
+categories = ["mods", "tweaks"]
