@@ -7,9 +7,12 @@ using UnityEngine;
 
 namespace BetterGameplay
 {
-    [BepInPlugin("com.xoxfaby.BetterGameplay", "BetterGameplay", "1.1.2")]
+    [BepInPlugin(GUID, Name, Version)]
     public class BetterGameplayPlugin : BetterUnityPlugin.BetterUnityPlugin<BetterGameplayPlugin>
     {
+        public const string GUID = "com.xoxfaby.BetterGameplay";
+        public const string Name = "BetterGameplay";
+        public const string Version = "1.1.2";
         public override BaseUnityPlugin typeReference => throw new NotImplementedException();
 
         static void MapZone_Awake(Action<MapZone> orig, MapZone self)
