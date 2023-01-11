@@ -67,7 +67,7 @@ namespace BetterGameplay
                     {
                         for(int i = 0; i<self.equipmentStateSlots.Length; i++)
                         {
-                            self.equipmentStateSlots[0].chargeFinishTime.t += Time.deltaTime;
+                            self.equipmentStateSlots[i].chargeFinishTime.t += Time.deltaTime;
                         }
                         return;
                     }
