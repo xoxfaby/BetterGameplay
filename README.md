@@ -27,7 +27,10 @@ If you have suggestions for more QoL improvements, feel free to contact me!
 
 ## Changelog
 
-### v1.1.1
+### v1.1.3
+ - Bugfix: Fixed bug that would apply the cooldown increase in the bazaar to only the first equipment instead of each equipment the character has. 
+
+### v1.1.1 & v1.1.2
  - Bugfix: Fixed items not being teleported up correctly.
  - Removed MMHook Dependency
 
